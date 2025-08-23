@@ -1,6 +1,6 @@
 // components/LoginModal.tsx
 "use client";
-
+import { signIn } from "next-auth/react"
 import React from "react";
 
 interface LoginModalProps {
@@ -15,7 +15,6 @@ export default function LoginModal({ onClose }: LoginModalProps) {
       aria-modal="true"
       aria-labelledby="login-modal-title"
     >
-
       <div
         className="bg-white dark:bg-gray-900 rounded-lg p-8 max-w-sm w-full shadow-lg relative"
         tabIndex={-1}
@@ -30,15 +29,15 @@ export default function LoginModal({ onClose }: LoginModalProps) {
           Continue with your Google account to access Coinverge.
         </p>
         <button
-          onClick={() => alert("Google auth flow here")}
+          onClick={async () => {
+            try {
+              await signIn("google", { callbackUrl: "/" });
+            } catch (error) {
+              console.error("Sign in error:", error);
+            }
+          }}
           className="w-full flex items-center justify-center space-x-3 border border-gray-400 rounded-md px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus:outline-none transition"
         >
-          <img
-            src="/google-icon.svg"
-            alt="Google logo"
-            className="w-5 h-5"
-            aria-hidden="true"
-          />
           <span className="font-semibold text-gray-700 dark:text-gray-200">
             Continue with Google
           </span>

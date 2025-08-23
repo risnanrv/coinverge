@@ -8,15 +8,14 @@ import LoginModal from "./loginmodel";
 
 export default function Navbar() {
   const pathname = usePathname();
-
-  const isHome = pathname === "/" || pathname === "";
+  const isHome = pathname === "/";
   const isPortfolio = pathname.startsWith("/portfolio");
 
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   return (
     <>
-      <nav className="w-full bg-[#161731]">
+      <header className="w-full bg-[#161731]">
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
           {/* Logo (left) */}
           <div className="flex items-center">
@@ -24,27 +23,27 @@ export default function Navbar() {
               Coinverge
             </span>
           </div>
+
           {/* Center nav links (desktop only) */}
           <div className="hidden md:flex gap-8 absolute left-1/2 -translate-x-1/2">
-            <Link href="/" passHref legacyBehavior>
-              <a
-                className={`text-white hover:text-[#337dc9] text-sm font-medium transition ${
-                  isHome ? "underline" : ""
-                }`}
-              >
-                Home
-              </a>
+            <Link
+              href="/"
+              className={`text-white hover:text-[#337dc9] text-sm font-medium transition ${
+                isHome ? "underline" : ""
+              }`}
+            >
+              Home
             </Link>
-            <Link href="/portfolio" passHref legacyBehavior>
-              <a
-                className={`text-white hover:text-[#337dc9] text-sm font-medium transition ${
-                  isPortfolio ? "underline" : ""
-                }`}
-              >
-                Portfolio
-              </a>
+            <Link
+              href="/portfolio"
+              className={`text-white hover:text-[#337dc9] text-sm font-medium transition ${
+                isPortfolio ? "underline" : ""
+              }`}
+            >
+              Portfolio
             </Link>
           </div>
+
           {/* Login button (right) */}
           <div className="flex items-center">
             <button
@@ -55,30 +54,26 @@ export default function Navbar() {
             </button>
           </div>
         </div>
+
         {/* Mobile nav (below main row) */}
         <div className="md:hidden flex flex-col">
-          {/* Home page: show "Portfolio ->" below login */}
           {isHome && (
             <div className="flex justify-end pr-4">
-              <Link href="/portfolio" passHref legacyBehavior>
-                <a className="text-white font-medium py-1">
-                  Portfolio <span aria-hidden>→</span>
-                </a>
+              <Link href="/portfolio" className="text-white font-medium py-1">
+                Portfolio <span aria-hidden>→</span>
               </Link>
             </div>
           )}
-          {/* Portfolio page: show "<- Home" below logo */}
+
           {isPortfolio && (
             <div className="flex justify-start pl-4">
-              <Link href="/" passHref legacyBehavior>
-                <a className="text-white font-medium py-1">
-                  <span aria-hidden>←</span> Home
-                </a>
+              <Link href="/" className="text-white font-medium py-1">
+                <span aria-hidden>←</span> Home
               </Link>
             </div>
           )}
         </div>
-      </nav>
+      </header>
 
       {/* Login Modal */}
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
