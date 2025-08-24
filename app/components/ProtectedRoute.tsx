@@ -22,7 +22,6 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   const handleLoginSuccess = () => {
     setShowLoginModal(false);
-    // The user will be redirected to the portfolio after successful login
   };
 
   const handleCloseModal = () => {

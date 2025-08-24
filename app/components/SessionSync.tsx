@@ -16,6 +16,5 @@ export default function SessionSync() {
     }
   }, [session, status, setSession, setIsLoading]);
 
-  // This component doesn't render anything, it just syncs state
   return null;
 }

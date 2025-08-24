@@ -70,7 +70,7 @@ export default function PortfolioPage() {
             const data = await fetchCoinDetails(id);
             
             if (data) {
-              // Valid data received
+            
               coinsData.push({
                 id: data.id,
                 name: data.name,
@@ -83,13 +83,11 @@ export default function PortfolioPage() {
               });
               console.log(`Successfully added ${data.name} to portfolio`);
             } else {
-              // API returned null (invalid coin), remove from store
               console.log(`Removing invalid coin ID from store: ${id}`);
               usePortfolioStore.getState().removeCoin(id);
             }
           } catch (coinError) {
             console.error(`Failed to fetch details for coin ${id}:`, coinError);
-            // Remove invalid coin ID from store
             usePortfolioStore.getState().removeCoin(id);
           }
         }
@@ -115,11 +113,9 @@ export default function PortfolioPage() {
   return (
     <ProtectedRoute>
       <main className="min-h-screen bg-[#161731] flex flex-col items-center py-8 px-2">
-      {/* Heading */}
       <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-[#8638b4] to-[#337dc9] bg-clip-text text-transparent mb-4 text-center">
         Coinverge Dashboard
       </h1>
-      {/* Action buttons */}
     <div className="flex gap-4 mb-7 items-center">
   <button
     onClick={() => router.push("/")}
@@ -153,7 +149,6 @@ export default function PortfolioPage() {
 </div>
 
 
-      {/* Holdings Grid */}
       <section className="w-full max-w-6xl">
         {loading && (
           <div className="text-center py-8">

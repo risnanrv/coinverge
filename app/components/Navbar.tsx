@@ -48,7 +48,7 @@ export default function Navbar() {
     <>
       <header className="w-full bg-[#161731] shadow-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-          {/* Logo (left) */}
+         
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-extrabold cursor-pointer">
               <span className="bg-gradient-to-r from-[#8638b4] to-[#337dc9] bg-clip-text text-transparent">
@@ -57,7 +57,6 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Center nav links (desktop only) */}
           <nav className="hidden md:flex gap-10 absolute left-1/2 transform -translate-x-1/2">
             <Link
               href="/"
@@ -84,7 +83,6 @@ export default function Navbar() {
             )}
           </nav>
 
-          {/* User section (right) */}
           <div className="flex items-center gap-4 relative">
             {isLoading ? (
               <div className="w-8 h-8 border-4 border-[#337dc9] border-t-transparent rounded-full animate-spin" />
@@ -125,7 +123,6 @@ export default function Navbar() {
                   </svg>
                 </button>
 
-                {/* User dropdown menu */}
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-2 z-50 ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
@@ -156,7 +153,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile nav (below main row) */}
+        
         <div className="md:hidden flex flex-col pt-3 pb-2">
           {isHome && isAuthenticated && (
             <div className="flex justify-end pr-4">
@@ -175,7 +172,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Login Modal */}
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </>
   );

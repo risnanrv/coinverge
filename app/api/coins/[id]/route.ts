@@ -5,7 +5,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Await params to get actual object
     const { id } = await params;
 
     if (!id) {

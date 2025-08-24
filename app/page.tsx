@@ -129,7 +129,6 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Show Global Add Coins button only if user is authenticated */}
         {selected.length >= 2 && isAuthenticated && (
           <div className="w-full max-w-2xl flex justify-end mb-6">
             <button
@@ -180,7 +179,6 @@ export default function HomePage() {
                     {coin.name}{" "}
                     <span className="text-gray-500">{coin.symbol}</span>
                   </span>
-                  {/* Show Add Coin button only if user is authenticated */}
                   {isCoinSelected && isAuthenticated && (
                     <button
                       className={`mt-6 px-5 py-2 w-full rounded font-semibold focus-visible:ring-2 focus:outline-none transition ${
