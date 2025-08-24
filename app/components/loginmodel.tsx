@@ -5,9 +5,10 @@ import React from "react";
 
 interface LoginModalProps {
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function LoginModal({ onClose }: LoginModalProps) {
+export default function LoginModal({ onClose, onSuccess }: LoginModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/10 dark:bg-black/10"
@@ -31,7 +32,8 @@ export default function LoginModal({ onClose }: LoginModalProps) {
         <button
           onClick={async () => {
             try {
-              await signIn("google", { callbackUrl: "/" });
+              await signIn("google", { callbackUrl: "/portfolio" });
+              onSuccess?.();
             } catch (error) {
               console.error("Sign in error:", error);
             }

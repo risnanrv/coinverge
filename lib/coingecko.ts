@@ -19,6 +19,12 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
       // Race between fetch and timeout
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
+      // Don't retry for certain status codes
+      if (response.status === 404) {
+        // 404 means the resource wasn't found - don't retry
+        return response;
+      }
+      
       if (response.ok) {
         return response;
       }
@@ -26,8 +32,6 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
       // If response is not ok, throw with status info
       if (response.status === 429) {
         throw new Error('Rate limit exceeded. Please try again later.');
-      } else if (response.status === 404) {
-        throw new Error('Coin not found');
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -63,6 +67,12 @@ interface CoinData {
       usd: number;
       [currency: string]: number;
     };
+    price_change_percentage_1h_in_currency?: {
+      usd: number;
+      [currency: string]: number;
+    };
+    price_change_percentage_24h?: number;
+    price_change_percentage_7d?: number;
     // Add more specific properties as needed, or use unknown for unknown structure
     market_cap?: { [currency: string]: number };
     total_volume?: { [currency: string]: number };
@@ -88,7 +98,7 @@ export async function searchCoins(query: string) {
   try {
     console.log(`Searching for coins with query: ${query}`);
     const res = await fetchWithRetry(
-      `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`
+      `/api/coins/search?query=${encodeURIComponent(query)}`
     );
     const data = await res.json();
     
@@ -109,8 +119,19 @@ export async function getCoinDetails(id: string) {
   try {
     console.log(`Getting details for coin: ${id}`);
     const res = await fetchWithRetry(
-      `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false`
+      `/api/coins/${encodeURIComponent(id)}`
     );
+    
+    // Check if the response indicates the coin was not found
+    if (res.status === 404) {
+      throw new Error('Coin not found');
+    }
+    
+    // Check if the response is not ok
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
     const data = await res.json();
     
     if (!validateCoinData(data)) {
@@ -135,8 +156,21 @@ export async function fetchCoinDetails(coinId: string) {
     
     console.log(`Fetching details for coin: ${coinId}`);
     const res = await fetchWithRetry(
-      `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(coinId.trim())}`
+      `/api/coins/${encodeURIComponent(coinId.trim())}`
     );
+    
+    // Check if the response indicates the coin was not found
+    if (res.status === 404) {
+      console.log(`Coin not found: ${coinId}`);
+      return null;
+    }
+    
+    // Check if the response is not ok
+    if (!res.ok) {
+      console.error(`HTTP error ${res.status} for coin ${coinId}`);
+      return null;
+    }
+    
     const data = await res.json();
     
     if (!validateCoinData(data)) {
@@ -151,60 +185,5 @@ export async function fetchCoinDetails(coinId: string) {
     
     // Don't throw the error, return null instead to allow graceful handling
     return null;
-  }
-}
-
-// Helper function to clean up invalid coin IDs from localStorage
-export function cleanupInvalidCoinIds(): string[] {
-  try {
-    const stored = localStorage.getItem("portfolioCoins");
-    if (!stored) return [];
-    
-    const coinIds: string[] = JSON.parse(stored);
-    if (!Array.isArray(coinIds)) return [];
-    
-    // Filter out obviously invalid IDs
-    const validIds = coinIds.filter(id => 
-      id && 
-      typeof id === 'string' && 
-      id.trim() !== '' && 
-      !id.includes(' ') && 
-      id.length > 0
-    );
-    
-    // Update localStorage with cleaned IDs
-    if (validIds.length !== coinIds.length) {
-      localStorage.setItem("portfolioCoins", JSON.stringify(validIds));
-      console.log(`Cleaned up ${coinIds.length - validIds.length} invalid coin IDs`);
-    }
-    
-    return validIds;
-  } catch (error) {
-    console.error('Error cleaning up coin IDs:', error);
-    return [];
-  }
-}
-
-// Health check function to test API connectivity
-export async function checkApiHealth(): Promise<boolean> {
-  try {
-    console.log('Checking API health...');
-    const response = await fetch('https://api.coingecko.com/api/v3/ping', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    
-    if (response.ok) {
-      console.log('API health check passed');
-      return true;
-    } else {
-      console.log(`API health check failed: ${response.status} ${response.statusText}`);
-      return false;
-    }
-  } catch (error) {
-    console.error('API health check failed:', error);
-    return false;
   }
 }

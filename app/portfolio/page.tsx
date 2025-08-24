@@ -1,27 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fetchCoinDetails, cleanupInvalidCoinIds, checkApiHealth } from "@/lib/coingecko";
-
-type Holding = {
-  id: string;
-  name: string;
-  symbol: string;
-  logo: string;
-  price: number;
-  change1h: number;
-  change24h: number;
-  change7d: number;
-};
+import { fetchCoinDetails } from "@/lib/coingecko";
+import { usePortfolioStore } from "@/lib/store/portfolioStore";
+import { useApiStore } from "@/lib/store/apiStore";
+import toast, { Toaster } from "react-hot-toast";
+import ProtectedRoute from "@/app/components/ProtectedRoute";
 
 export default function PortfolioPage() {
   const router = useRouter();
-  const [holdings, setHoldings] = useState<Holding[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Zustand stores
+  const { 
+    holdings, 
+    loading, 
+    error, 
+    setHoldings, 
+    setLoading, 
+    setError, 
+    clearPortfolio, 
+    validateAndCleanCoins 
+  } = usePortfolioStore();
 
-    useEffect(() => {
+  const { checkApiHealth } = useApiStore();
+
+  useEffect(() => {
     const loadCoins = async () => {
       try {
         setLoading(true);
@@ -36,7 +40,7 @@ export default function PortfolioPage() {
         }
         
         // Clean up any invalid coin IDs first
-        const validCoinIds = cleanupInvalidCoinIds();
+        const validCoinIds = validateAndCleanCoins();
         
         if (validCoinIds.length === 0) {
           setHoldings([]);
@@ -47,7 +51,17 @@ export default function PortfolioPage() {
         console.log(`Loading portfolio with ${validCoinIds.length} valid coin IDs:`, validCoinIds);
 
         // Fetch details for each valid coin id from your API
-        const coinsData: Holding[] = [];
+        type CoinData = {
+          id: string;
+          name: string;
+          symbol: string;
+          logo: string;
+          price: number;
+          change1h: number;
+          change24h: number;
+          change7d: number;
+        };
+        const coinsData: CoinData[] = [];
         
         for (const id of validCoinIds) {
           try {
@@ -68,19 +82,14 @@ export default function PortfolioPage() {
               });
               console.log(`Successfully added ${data.name} to portfolio`);
             } else {
-              // API returned null (invalid coin), remove from localStorage
-              const currentIds = JSON.parse(localStorage.getItem("portfolioCoins") || "[]");
-              const updatedIds = currentIds.filter((coinId: string) => coinId !== id);
-              localStorage.setItem("portfolioCoins", JSON.stringify(updatedIds));
-              console.log(`Removed invalid coin ID: ${id}`);
+              // API returned null (invalid coin), remove from store
+              console.log(`Removing invalid coin ID from store: ${id}`);
+              usePortfolioStore.getState().removeCoin(id);
             }
           } catch (coinError) {
             console.error(`Failed to fetch details for coin ${id}:`, coinError);
-            // Remove invalid coin ID from localStorage
-            const currentIds = JSON.parse(localStorage.getItem("portfolioCoins") || "[]");
-            const updatedIds = currentIds.filter((coinId: string) => coinId !== id);
-            localStorage.setItem("portfolioCoins", JSON.stringify(updatedIds));
-            console.log(`Removed failed coin ID: ${id}`);
+            // Remove invalid coin ID from store
+            usePortfolioStore.getState().removeCoin(id);
           }
         }
 
@@ -94,32 +103,54 @@ export default function PortfolioPage() {
       }
     };
     loadCoins();
-  }, []);
+  }, [setHoldings, setLoading, setError, checkApiHealth, validateAndCleanCoins]);
+
+  const handleValidateAndClean = () => {
+    validateAndCleanCoins();
+    toast.success("Portfolio validated and cleaned");
+    window.location.reload();
+  };
 
   return (
-    <main className="min-h-screen bg-[#161731] flex flex-col items-center py-8 px-2">
+    <ProtectedRoute>
+      <main className="min-h-screen bg-[#161731] flex flex-col items-center py-8 px-2">
       {/* Heading */}
       <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-[#8638b4] to-[#337dc9] bg-clip-text text-transparent mb-4 text-center">
         Coinverge Dashboard
       </h1>
       {/* Action buttons */}
-      <div className="flex gap-4 mb-7 items-center">
-        <button
-          onClick={() => router.push("/")}
-          className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow"
-        >
-          Add Coin
-        </button>
-        <button className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow">
-          AI Recommendation
-        </button>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="px-5 py-2 bg-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:bg-[#2a6bb8]"
-        >
-          Refresh Portfolio
-        </button>
-      </div>
+    <div className="flex gap-4 mb-7 items-center">
+  <button
+    onClick={() => router.push("/")}
+    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow"
+  >
+    Add Coin
+  </button>
+  <button
+    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow"
+  >
+    AI Recommendation
+  </button>
+  <button
+    onClick={() => window.location.reload()}
+    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
+  >
+    Refresh Portfolio
+  </button>
+  <button
+    onClick={clearPortfolio}
+    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
+  >
+    Clear Portfolio
+  </button>
+  <button
+    onClick={handleValidateAndClean}
+    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
+  >
+    Validate & Clean
+  </button>
+</div>
+
 
       {/* Holdings Grid */}
       <section className="w-full max-w-6xl">
@@ -190,6 +221,8 @@ export default function PortfolioPage() {
         </div>
         )}
       </section>
+      <Toaster />
     </main>
+    </ProtectedRoute>
   );
 }

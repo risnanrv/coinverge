@@ -1,23 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { searchCoins } from "@/lib/coingecko";
+import { useSearchStore } from "@/lib/store/searchStore";
+import { usePortfolioStore } from "@/lib/store/portfolioStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import Image from "next/image";
 
-type Coin = {
-  id: string;
-  name: string;
-  symbol: string;
-  logo: string;
-};
-
 export default function HomePage() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Coin[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [defaultCoins, setDefaultCoins] = useState<Coin[]>([]);
+  // Zustand search store
+  const { 
+    query, 
+    results, 
+    selected, 
+    defaultCoins,
+    setQuery, 
+    setResults, 
+    setDefaultCoins, 
+    selectCoin, 
+    deselectCoin, 
+    clearSelection,
+    isSelected 
+  } = useSearchStore();
 
+  // Portfolio store for adding coins
+  const { addCoin, addMultipleCoins } = usePortfolioStore();
+
+  // Auth store for authentication status
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  // Fetch default coins on mount
   useEffect(() => {
     const fetchDefaultCoins = async () => {
       const data = await searchCoins("bitcoin");
@@ -36,7 +49,7 @@ export default function HomePage() {
       setDefaultCoins(coinsData);
     };
     fetchDefaultCoins();
-  }, []);
+  }, [setDefaultCoins]);
 
   // Debounced search effect
   useEffect(() => {
@@ -46,11 +59,11 @@ export default function HomePage() {
     }
     const handler = setTimeout(() => {
       handleSearch();
-    }, 250); // 500ms debounce
+    }, 250);
     return () => {
       clearTimeout(handler);
     };
-  }, [query]);
+  }, [query, setResults]);
 
   const handleSearch = async () => {
     const data = await searchCoins(query);
@@ -69,37 +82,28 @@ export default function HomePage() {
     setResults(coinsData);
   };
 
-const handleSelect = (coinId: string) => {
-    setSelected((prev) =>
-      prev.includes(coinId)
-        ? prev.filter((id) => id !== coinId)
-        : [...prev, coinId]
-    );
-  };
+  // Selection handlers
+  const handleSelect = (coinId: string) => {
+    if (isSelected(coinId)) {
+      deselectCoin(coinId);
+    } else {
+      selectCoin(coinId);
+    }
+  };
 
+  // Add multiple coins
+  const handleGlobalAddCoin = () => {
+    addMultipleCoins(selected);
+    toast.success(`Added coins: ${selected.join(", ")}`);
+    clearSelection();
+  };
 
-const handleGlobalAddCoin = () => {
-  localStorage.setItem(
-    "portfolioCoins",
-    JSON.stringify(selected)
-  );
-  toast.success(`Added coins: ${selected.join(", ")}`);
-  setSelected([]);
-};
-
-
-
- const handleCardAddCoin = (coinId: string, coinName: string) => {
-  const existing = JSON.parse(localStorage.getItem("portfolioCoins") || "[]");
-  if (!existing.includes(coinId)) {
-    const updated = [...existing, coinId];
-    localStorage.setItem("portfolioCoins", JSON.stringify(updated));
+  // Add single coin
+  const handleCardAddCoin = (coinId: string, coinName: string) => {
+    addCoin(coinId);
     toast.success(`Added ${coinName}`);
-  } else {
-    toast.success(`${coinName} is already in your portfolio`);
-  }
-  // Don't remove from selected state - keep it selected so user can see what they've added
-};
+  };
+
   const filteredCoins = results.length > 0 ? results : defaultCoins;
 
   return (
@@ -114,19 +118,19 @@ const handleGlobalAddCoin = () => {
             Track, manage, and grow your crypto in Coinverge
           </p>
         </section>
+
         <div className="w-full max-w-2xl mb-3 flex gap-2">
           <input
             type="text"
             placeholder="Search.."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            // Remove onKeyDown Enter handler because no manual search button
             className="flex-1 rounded-full px-5 py-3 bg-[#191a2f] text-white border border-[#23234d] outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-[#337dc9] transition"
           />
-          {/* Remove Search button */}
         </div>
-        {/* Global Add Coin Button */}
-        {selected.length >= 2 && (
+
+        {/* Show Global Add Coins button only if user is authenticated */}
+        {selected.length >= 2 && isAuthenticated && (
           <div className="w-full max-w-2xl flex justify-end mb-6">
             <button
               className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white rounded-lg font-semibold shadow focus-visible:ring-2 focus:outline-none transition"
@@ -136,12 +140,12 @@ const handleGlobalAddCoin = () => {
             </button>
           </div>
         )}
-        {/* Grid */}
+
         <section className="w-full max-w-5xl">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredCoins.map((coin) => {
-              const isSelected = selected.includes(coin.id);
-              const isInPortfolio = JSON.parse(localStorage.getItem("portfolioCoins") || "[]").includes(coin.id);
+              const isCoinSelected = isSelected(coin.id);
+              const isInPortfolio = usePortfolioStore.getState().coins.includes(coin.id);
               return (
                 <div
                   key={coin.id}
@@ -149,19 +153,19 @@ const handleGlobalAddCoin = () => {
                     ${
                       isInPortfolio
                         ? "ring-green-500 bg-green-50"
-                        : isSelected
+                        : isCoinSelected
                         ? "ring-[#337dc9]"
                         : "hover:shadow-lg hover:scale-105"
                     }`}
                 >
                   <button
-                    aria-label={isSelected ? "Deselect coin" : "Select coin"}
+                    aria-label={isCoinSelected ? "Deselect coin" : "Select coin"}
                     className="absolute top-3 right-3 h-6 w-6 rounded-full border-2 border-[#337dc9] flex items-center justify-center bg-white focus-visible:ring-2 focus:outline-none transition"
                     onClick={() => handleSelect(coin.id)}
                     tabIndex={0}
-                    aria-pressed={isSelected}
+                    aria-pressed={isCoinSelected}
                   >
-                    {isSelected && (
+                    {isCoinSelected && (
                       <span className="inline-block w-3 h-3 bg-gradient-to-br from-[#8638b4] to-[#337dc9] rounded-full" />
                     )}
                   </button>
@@ -176,7 +180,8 @@ const handleGlobalAddCoin = () => {
                     {coin.name}{" "}
                     <span className="text-gray-500">{coin.symbol}</span>
                   </span>
-                  {isSelected && (
+                  {/* Show Add Coin button only if user is authenticated */}
+                  {isCoinSelected && isAuthenticated && (
                     <button
                       className={`mt-6 px-5 py-2 w-full rounded font-semibold focus-visible:ring-2 focus:outline-none transition ${
                         isInPortfolio
