@@ -130,7 +130,7 @@ export default function PortfolioPage() {
   <button
     className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow"
   >
-    AI Recommendation
+    AI Recommendations
   </button>
   <button
     onClick={() => window.location.reload()}

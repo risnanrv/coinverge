@@ -112,7 +112,7 @@ export default function HomePage() {
       <main className="min-h-screen bg-[#161731] flex flex-col items-center py-8 px-2">
         <section className="mb-8 text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-[#8638b4] to-[#337dc9] bg-clip-text text-transparent mb-2">
-            Coinverge
+            Welcome To Coinverge
           </h1>
           <p className="text-lg sm:text-xl text-gray-200 font-medium tracking-tight">
             Track, manage, and grow your crypto in Coinverge
