@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    // Await params to get actual object
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: 'Coin ID is required' }, { status: 400 });
@@ -29,6 +30,7 @@ export async function GET(
 
     const data = await response.json();
     return NextResponse.json(data);
+
   } catch (error) {
     console.error('Error fetching coin details:', error);
     return NextResponse.json(

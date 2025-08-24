@@ -7,6 +7,7 @@ import LoginModal from "./loginmodel";
 import { useAuthStore } from "@/lib/store/authStore";
 import { signOut } from "next-auth/react";
 import { usePortfolioStore } from "@/lib/store/portfolioStore";
+import Image from "next/image";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -96,11 +97,13 @@ export default function Navbar() {
                   aria-expanded={showUserMenu}
                 >
                   {session?.user?.image ? (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt="Profile"
                       className="w-8 h-8 rounded-full object-cover"
                       loading="lazy"
+                      width={32}
+                      height={32}
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-sm font-semibold uppercase text-white">

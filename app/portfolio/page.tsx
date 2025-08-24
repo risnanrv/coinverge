@@ -7,6 +7,7 @@ import { usePortfolioStore } from "@/lib/store/portfolioStore";
 import { useApiStore } from "@/lib/store/apiStore";
 import toast, { Toaster } from "react-hot-toast";
 import ProtectedRoute from "@/app/components/ProtectedRoute";
+import Image from "next/image";
 
 export default function PortfolioPage() {
   const router = useRouter();
@@ -184,10 +185,12 @@ export default function PortfolioPage() {
                 className="relative bg-[#e5e7fa] rounded-xl shadow-md px-5 pt-5 pb-6 flex flex-col items-center transition ring-2 ring-transparent hover:shadow-lg hover:scale-105"
               >
                 <div className="absolute top-3 right-3"></div>
-                <img
+                <Image
                   src={coin.logo}
                   alt={coin.name + " logo"}
                   className="w-12 h-12 mb-4"
+                  width={48}
+                  height={48}
                 />
                 <span className="font-semibold text-lg text-gray-900">
                   {coin.name} <span className="text-gray-500">{coin.symbol}</span>

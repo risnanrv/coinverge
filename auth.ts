@@ -3,6 +3,15 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import type { NextAuthConfig } from "next-auth"
 
+declare module "next-auth" {
+  interface User {
+    accessToken?: string;
+  }
+  interface Session {
+    user: User;
+  }
+}
+
 export const config = {
   providers: [
     Google({
