@@ -116,37 +116,38 @@ export default function PortfolioPage() {
       <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-[#8638b4] to-[#337dc9] bg-clip-text text-transparent mb-4 text-center">
         Coinverge Dashboard
       </h1>
-    <div className="flex gap-4 mb-7 items-center">
+  <div className="flex flex-col gap-4 mb-7 items-center md:flex-row md:gap-4 md:justify-center md:flex-wrap">
   <button
     onClick={() => router.push("/")}
-    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow"
+    className="w-full md:w-auto px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow"
   >
     Add Coin
   </button>
   <button
-    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow"
+    className="w-full md:w-auto px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow"
   >
     AI Recommendations
   </button>
   <button
     onClick={() => window.location.reload()}
-    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
+    className="w-full md:w-auto px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
   >
     Refresh Portfolio
   </button>
   <button
     onClick={clearPortfolio}
-    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
+    className="w-full md:w-auto px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
   >
     Clear Portfolio
   </button>
   <button
     onClick={handleValidateAndClean}
-    className="px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
+    className="w-full md:w-auto px-5 py-2 bg-gradient-to-r from-[#8638b4] to-[#337dc9] text-white font-semibold rounded focus-visible:ring-2 focus:outline-none transition shadow hover:opacity-90"
   >
     Validate & Clean
   </button>
 </div>
+
 
 
       <section className="w-full max-w-6xl">
